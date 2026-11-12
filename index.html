@@ -7,6 +7,7 @@
 <meta property="og:image" content="https://YOUR-SITE.vercel.app/og.png"><meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#1d2b4f">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="tree.css">
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@700&display=swap" rel="stylesheet">
 </head><body><canvas id="snow"></canvas>
 <main>
@@ -15,16 +16,28 @@
 <section class="card hero"><p>수능까지</p><div class="dd" id="dd">-</div><p class="msg" id="msg"></p></section>
 <div class="btns"><button class="p" id="bw">✨ 나의 소원 적기</button><button class="s" id="bl">💌 미래의 나에게 편지 쓰기</button><button class="g" id="bm">내 편지 다시 보기 (접근 코드)</button></div>
 <section class="card stats"><div><b id="sw">0</b>소원</div><div><b id="sh">0</b>공감</div></section>
-<h2>소원 게시판</h2><div id="list"></div>
+<h2>소원 트리</h2><p class="note" style="margin:0 4px">매달린 편지를 눌러 소원을 읽어보세요 ✉️ (금색 테두리는 내가 쓴 소원)</p>
+<div id="tree"></div>
 <div class="btns"><button class="s" id="share">🔗 링크 복사 · 공유하기</button></div>
 <p class="note" style="text-align:center">인스타 스토리 → 스티커 → 링크 에 붙여넣어 주세요</p>
 </main>
 
-<dialog id="dw"><h3>나의 소원</h3>
+<dialog id="dg" class="letter"><h3>💌 안녕!</h3>
+<p style="line-height:1.9;margin:8px 0">안녕, 나 최종현이야. 내 이름이 갑자기 나와서 좀 당황했지?</p>
+<p style="line-height:1.9;margin:8px 0">서로 힘낼 수 있도록 응원해주는 앱을 만들어 보면 어떨까 해서 만들어봤어! 수능뿐만 아니라 면접이나 다른 입시를 위한 내용을 적어도 괜찮아!</p>
+<p style="line-height:1.9;margin:8px 0">익명으로 쓸 수 있으니까 걱정하지 말고, 화이팅! 🔥</p>
+<div class="btns"><button class="p" data-x>시작하기 ❄️</button></div></dialog>
+
+<dialog id="dw"><h3 id="wt">나의 소원</h3>
 <input id="wn" maxlength="20" placeholder="닉네임"><label class="row"><input type="checkbox" id="wa"> 익명으로 쓸래요</label>
 <textarea id="wc" rows="4" maxlength="300" placeholder="소원을 적어주세요 (300자)"></textarea>
 <textarea id="wh" rows="2" maxlength="200" placeholder="(선택) 다른 수험생에게 응원 한마디"></textarea>
 <p class="err" id="we"></p><div class="btns"><button class="p" id="ws">소원 올리기</button><button class="g" data-x>닫기</button></div></dialog>
+
+<dialog id="dr" class="letter"><h3 id="rn"></h3><p class="w" id="rc"></p><p class="c" id="rh"></p><p class="note" id="rt"></p>
+<div class="btns"><button class="h" id="rb"></button>
+<div id="rm" hidden><button class="s" id="re">✏️ 수정</button><button class="s" id="rd">🗑 삭제</button></div>
+<button class="g" data-x>닫기</button></div></dialog>
 
 <dialog id="dl" class="letter"><div id="lf"><h3>미래의 나에게</h3>
 <input id="ln" maxlength="20" placeholder="닉네임"><input id="lt" maxlength="60" placeholder="제목">
@@ -59,36 +72,82 @@ tick();setInterval(tick,1000);
 for(let i=0;i<70;i++)f.push({x:Math.random()*W,y:Math.random()*H,r:1+Math.random()*3,v:.4+Math.random()*1,p:Math.random()*6});
 if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
 (function L(){x.clearRect(0,0,W,H);x.fillStyle='rgba(255,255,255,.85)';for(const s of f){s.y+=s.v;s.p+=.02;s.x+=Math.sin(s.p)*.5;if(s.y>H){s.y=-5;s.x=Math.random()*W}x.beginPath();x.arc(s.x,s.y,s.r,0,7);x.fill()}requestAnimationFrame(L)})()})();
-// 게시판
-const list=$('#list');
-function card(w){const e=document.createElement('article');e.className='card';e.dataset.id=w.id;
- e.innerHTML='<h4></h4><p class="w"></p><p class="c"></p><footer><time></time><button class="h"></button></footer>';
- e.querySelector('h4').textContent=w.nickname;e.querySelector('.w').textContent=w.content;
- const c=e.querySelector('.c');w.cheer?c.textContent='💬 '+w.cheer:c.remove();
- e.querySelector('time').textContent=kstShort.format(new Date(w.created_at));
- const b=e.querySelector('.h');paint(b,w.hearts,liked.has(w.id));
- b.onclick=async()=>{if(liked.has(w.id))return;const{error}=await sb.rpc('add_heart',{p_wish:w.id,p_client:cid});
-  if(error){alert(error.message.includes('rate_limit')?'잠시 후 다시 눌러주세요':'공감에 실패했어요');return}
-  liked.add(w.id);localStorage.liked=JSON.stringify([...liked]);paint(b,w.hearts+1,true);stats()};return e}
+
+// 소원 트리
+const tree=$('#tree'),WS=new Map(),mine=new Set();let editId=null,openId=null,lastW=0;
 function paint(b,n,on){b.textContent=(on?'♥ ':'♡ ')+n;b.classList.toggle('on',on)}
-function add(w,top){if(list.querySelector(`[data-id="${w.id}"]`))return;const e=card(w);top?list.prepend(e):list.append(e)}
+function render(){
+ const ws=[...WS.values()].sort((a,b)=>a.created_at<b.created_at?1:-1);
+ const cw=tree.clientWidth||520,cx=cw/2,max=cx-8,half=y=>Math.min(max,20+y*.5);lastW=cw;
+ const its=[];let y=70,i=0,r=0;
+ while(i<ws.length){const hw=half(y)-14,n=Math.max(1,Math.floor(hw*2/48)),step=hw*2/n;
+  ws.slice(i,i+n).forEach((w,k)=>{const h=parseInt(w.id.slice(0,4),16)||0;
+   its.push({w,x:cx-hw+step*(k+.5)+(r%2?1:-1)*step*.12,y:y+(h%12)-6,d:-(h%45)/10})});
+  i+=n;y+=60;r++}
+ const H=Math.max(y+10,280),T=H+44;
+ let g='';
+ for(let s=26,t=0;s<H;s+=90,t++){const b=s+170,bw=Math.min(cx-2,half(b)+8);
+  g+=`<polygon points="${cx},${s} ${cx+bw},${b} ${cx-bw},${b}" fill="${['#2d6a4f','#25573f','#347a58'][t%3]}"/>`}
+ let sd=7;const rn=()=>(sd=sd*16807%2147483647)/2147483647;
+ for(let k=0;k<Math.floor(H/14);k++){const yy=44+rn()*(H-54),xx=cx+(rn()*2-1)*(half(yy)-10);
+  g+=`<circle cx="${xx.toFixed(1)}" cy="${yy.toFixed(1)}" r="2.6" fill="${['#f6c978','#ff8fa3','#cfe3f7'][k%3]}" opacity=".85"/>`}
+ g+=`<rect x="0" y="${T-14}" width="${cw}" height="14" fill="#f4f8ff"/><text x="${cx}" y="26" text-anchor="middle" font-size="24">⭐</text>`;
+ tree.style.height=T+'px';tree.replaceChildren();
+ tree.insertAdjacentHTML('beforeend',`<svg viewBox="0 0 ${cw} ${T}" preserveAspectRatio="xMidYMin meet" aria-hidden="true">${g}</svg>`);
+ if(!ws.length)tree.insertAdjacentHTML('beforeend','<div class="empty">아직 매달린 소원이 없어요<br>첫 번째 소원을 걸어볼까요?</div>');
+ for(const o of its){const b=document.createElement('button');b.className='env'+(mine.has(o.w.id)?' mine':'');
+  b.style.cssText=`left:${o.x.toFixed(1)}px;top:${o.y}px;animation-delay:${o.d}s`;
+  b.setAttribute('aria-label',o.w.nickname+'의 소원 읽기');b.innerHTML='<i class="str"></i><span class="pap"></span>';
+  b.onclick=()=>openW(o.w.id);tree.append(b)}}
+let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(tree.clientWidth!==lastW)render()},150)});
+
+function openW(id){const w=WS.get(id);if(!w)return;openId=id;
+ $('#rn').textContent=w.nickname;$('#rc').textContent=w.content;
+ const c=$('#rh');c.textContent=w.cheer?'💬 '+w.cheer:'';c.hidden=!w.cheer;
+ $('#rt').textContent=kstShort.format(new Date(w.created_at))+(mine.has(id)?' · 내가 쓴 소원':'');
+ paint($('#rb'),w.hearts,liked.has(id));$('#rm').hidden=!mine.has(id);
+ if(!$('#dr').open)$('#dr').showModal()}
+$('#rb').onclick=async()=>{const w=WS.get(openId);if(!w||liked.has(w.id))return;
+ const{error}=await sb.rpc('add_heart',{p_wish:w.id,p_client:cid});
+ if(error){alert(error.message.includes('rate_limit')?'잠시 후 다시 눌러주세요':'공감에 실패했어요');return}
+ liked.add(w.id);localStorage.liked=JSON.stringify([...liked]);w.hearts++;paint($('#rb'),w.hearts,true);stats()};
+$('#re').onclick=()=>{const w=WS.get(openId);if(!w)return;editId=w.id;
+ $('#wt').textContent='소원 수정';$('#ws').textContent='수정하기';
+ $('#wa').checked=w.nickname==='익명';$('#wn').value=w.nickname==='익명'?'':w.nickname;
+ $('#wc').value=w.content;$('#wh').value=w.cheer||'';$('#we').textContent='';
+ $('#dr').close();$('#dw').showModal()};
+$('#rd').onclick=async()=>{const id=openId;if(!id||!confirm('이 소원을 삭제할까요? 되돌릴 수 없어요.'))return;
+ const{error}=await sb.rpc('delete_wish',{p_id:id,p_client:cid});
+ if(error){alert(msg(error));return}
+ WS.delete(id);mine.delete(id);$('#dr').close();render();stats()};
+
 async function load(){const{data,error}=await sb.from('wishes').select('*').order('created_at',{ascending:false}).limit(100);
- if(error){list.innerHTML='<p class="note">불러오지 못했어요. config.js 설정을 확인해 주세요.</p>';return}
- list.innerHTML='';data.forEach(w=>add(w));stats()}
+ if(error){tree.style.height='auto';tree.innerHTML='<p class="note" style="padding:20px;color:#fff">불러오지 못했어요. config.js 설정을 확인해 주세요.</p>';return}
+ data.forEach(w=>WS.set(w.id,w));
+ const{data:ids}=await sb.rpc('my_wish_ids',{p_client:cid});(ids||[]).forEach(v=>mine.add(v));
+ render();stats()}
 async function stats(){const{data}=await sb.rpc('get_stats');if(data&&data[0]){$('#sw').textContent=data[0].wish_count;$('#sh').textContent=data[0].heart_count}}
 sb.channel('wishes').on('postgres_changes',{event:'*',schema:'public',table:'wishes'},p=>{
- if(p.eventType==='INSERT')add(p.new,true);
- else if(p.eventType==='UPDATE'){const e=list.querySelector(`[data-id="${p.new.id}"]`);if(e)paint(e.querySelector('.h'),p.new.hearts,liked.has(p.new.id))}
+ if(p.eventType==='DELETE'){WS.delete(p.old.id);if(openId===p.old.id&&$('#dr').open)$('#dr').close();render()}
+ else{const isNew=!WS.has(p.new.id);WS.set(p.new.id,p.new);if(openId===p.new.id&&$('#dr').open)openW(p.new.id);if(isNew)render()}
  stats()}).subscribe();
 load();
+
 // 다이얼로그
 document.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>b.closest('dialog').close());
-$('#bw').onclick=()=>$('#dw').showModal();$('#bl').onclick=()=>{$('#lf').hidden=false;$('#ld').hidden=true;$('#dl').showModal()};$('#bm').onclick=()=>$('#dm').showModal();
-const msg=e=>e.message.includes('rate_limit')?'너무 자주 올렸어요. 잠시 후 다시 시도해 주세요.':'저장에 실패했어요. 입력을 확인해 주세요.';
+$('#dg').showModal(); // 앱을 열 때마다 환영 메시지 표시
+$('#bw').onclick=()=>{editId=null;$('#wt').textContent='나의 소원';$('#ws').textContent='소원 올리기';
+ $('#wc').value=$('#wh').value='';$('#we').textContent='';$('#dw').showModal()};
+$('#bl').onclick=()=>{$('#lf').hidden=false;$('#ld').hidden=true;$('#dl').showModal()};$('#bm').onclick=()=>$('#dm').showModal();
+const msg=e=>e.message.includes('rate_limit')?'너무 자주 시도했어요. 잠시 후 다시 해주세요.':e.message.includes('not_owner')?'내가 쓴 소원만 수정/삭제할 수 있어요.':'저장에 실패했어요. 입력을 확인해 주세요.';
 $('#ws').onclick=async()=>{const c=$('#wc').value.trim();if(!c){$('#we').textContent='소원을 적어주세요';return}
- $('#ws').disabled=true;const{error}=await sb.rpc('add_wish',{p_nick:$('#wa').checked?'익명':$('#wn').value,p_content:c,p_cheer:$('#wh').value,p_client:cid});
+ const nick=$('#wa').checked?'익명':$('#wn').value,cheer=$('#wh').value;
+ $('#ws').disabled=true;
+ const{data,error}=editId?await sb.rpc('edit_wish',{p_id:editId,p_client:cid,p_nick:nick,p_content:c,p_cheer:cheer})
+  :await sb.rpc('add_wish',{p_nick:nick,p_content:c,p_cheer:cheer,p_client:cid});
  $('#ws').disabled=false;if(error){$('#we').textContent=msg(error);return}
- $('#wc').value=$('#wh').value='';$('#we').textContent='';$('#dw').close()};
+ const w=Array.isArray(data)?data[0]:data;if(w&&w.id){WS.set(w.id,w);if(!editId)mine.add(w.id);render()}
+ editId=null;$('#wc').value=$('#wh').value='';$('#we').textContent='';$('#dw').close()};
 $('#ls').onclick=async()=>{const[n,t,b]=['#ln','#lt','#lb'].map(s=>$(s).value.trim());const i=$('#li').value.trim().replace(/^@/,'');
  if(!n||!t||!b){$('#le').textContent='닉네임, 제목, 내용을 모두 적어주세요';return}
  if(i&&!/^[A-Za-z0-9._]{1,30}$/.test(i)){$('#le').textContent='인스타그램 아이디 형식이 올바르지 않아요';return}
