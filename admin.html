@@ -14,7 +14,7 @@ async function init(){const{data:{session}}=await sb.auth.getSession();if(!sessi
  const{data:ok}=await sb.rpc('is_admin');if(!ok){$('#er').textContent='관리자 권한이 없는 계정입니다.';await sb.auth.signOut();return}
  $('#lg').hidden=true;$('#ad').hidden=false;
  $('#notice').innerHTML=Date.now()<Date.parse(CFG.examEnd)?'📌 수능 종료 전입니다. 편지는 수능이 끝난 뒤(11/19 18시 이후) 인스타그램 DM으로 직접 전달해 주세요.'
- :'📬 <b>수능이 끝났어요!</b> 아래 목록에서 인스타그램 아이디를 눌러 DM으로 편지를 보내고, 보낸 뒤 “전달 완료”를 눌러 주세요. 인스타 아이디가 없는 편지는 전달 방법이 없습니다.';
+ :'📬 <b>수능이 끝났어요!</b> 아래 목록에서 인스타그램 아이디를 눌러 DM으로 편지를 보내고, 보낸 뒤 “전달 완료”를 눌러 주세요. DM 전달을 원하지 않은 편지(인스타 없음)는 보내지 않아도 됩니다.';
  load()}
 async function load(){const{data,error}=await sb.from('letters').select('*').order('created_at',{ascending:false});if(error){$('#er').textContent=error.message;return}all=data;draw()}
 function draw(){const q=$('#q').value.toLowerCase(),fl=document.querySelector('[name=f]:checked').value;
@@ -23,7 +23,7 @@ function draw(){const q=$('#q').value.toLowerCase(),fl=document.querySelector('[
  r.forEach(l=>{const e=document.createElement('article');e.className='card';
   e.innerHTML='<h4></h4><p class="note"></p><p class="w"></p><footer><span class="tag"></span><button class="s"></button></footer>';
   e.querySelector('h4').textContent=l.title;e.querySelector('.note').textContent=l.nickname+' · '+f.format(new Date(l.created_at));
-  const n=e.querySelector('.note');if(l.instagram){const a=document.createElement('a');a.href='https://instagram.com/'+l.instagram;a.target='_blank';a.rel='noopener';a.textContent=' · @'+l.instagram;n.append(a)}else n.append(' · (인스타 없음)');
+  const n=e.querySelector('.note');if(l.instagram){const a=document.createElement('a');a.href='https://instagram.com/'+l.instagram;a.target='_blank';a.rel='noopener';a.textContent=' · @'+l.instagram;n.append(a)}else n.append(' · (DM 전달 안 함)');
   e.querySelector('.w').textContent=l.body;const t=e.querySelector('.tag');t.textContent=l.delivered?'전달 완료':'미전달';t.classList.toggle('ok',l.delivered);
   const b=e.querySelector('button');b.textContent=l.delivered?'미전달로 되돌리기':'전달 완료 표시';
   b.onclick=async()=>{const{error}=await sb.from('letters').update({delivered:!l.delivered,delivered_at:l.delivered?null:new Date().toISOString()}).eq('id',l.id);if(error)alert(error.message);else load()};box.append(e)})}

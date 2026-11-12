@@ -18,11 +18,6 @@
 </main>
 <div id="bar"><button class="p" id="bw">✨ 나의 소원 적기</button><button class="s" id="bl">💌 미래의 나에게 편지</button></div>
 
-<dialog id="dg" class="letter"><h3>💌 안녕!</h3>
-<p style="line-height:1.9;margin:8px 0">안녕, 나 최종현이야. 내 이름이 갑자기 나와서 좀 당황했지?</p>
-<p style="line-height:1.9;margin:8px 0">서로 힘낼 수 있도록 응원해주는 앱을 만들어 보면 어떨까 해서 만들어봤어! 수능뿐만 아니라 면접이나 다른 입시를 위한 내용을 적어도 괜찮아!</p>
-<p style="line-height:1.9;margin:8px 0">익명으로 쓸 수 있으니까 걱정하지 말고, 화이팅! 🔥</p>
-<div class="btns"><button class="p" data-x>시작하기 ❄️</button></div></dialog>
 
 <dialog id="dw"><h3 id="wt">나의 소원</h3>
 <div id="w1"><input id="wn" maxlength="20" placeholder="닉네임"><label class="row"><input type="checkbox" id="wa"> 익명으로 쓸래요</label>
@@ -40,10 +35,13 @@
 <dialog id="dl" class="letter"><div id="lf"><h3>미래의 나에게</h3>
 <input id="ln" maxlength="20" placeholder="닉네임"><input id="lt" maxlength="60" placeholder="제목">
 <textarea id="lb" rows="7" maxlength="3000" placeholder="수능이 끝난 나에게…"></textarea>
-<input id="li" maxlength="31" placeholder="(선택) 인스타그램 아이디 — DM으로 받고 싶다면" autocapitalize="none">
+<p style="margin:12px 0 2px;font-size:14px;line-height:1.6">수능이 끝난 뒤, 최종현이 이 편지를 인스타그램 DM으로 보내줄까요?</p>
+<label class="row"><input type="radio" name="dm" value="y"> 네, DM으로 받을래요</label>
+<label class="row"><input type="radio" name="dm" value="n"> 아니요, 접근 코드로 직접 볼래요</label>
+<div id="lia" hidden><input id="li" maxlength="31" placeholder="인스타그램 아이디 (DM 받을 계정)" autocapitalize="none"></div>
 <p class="note">🔒 편지는 게시판에 공개되지 않아요. 나와 관리자만 볼 수 있어요.</p>
 <p class="err" id="le"></p><div class="btns"><button class="p" id="ls">편지 보관하기</button><button class="g" data-x>닫기</button></div></div>
-<div id="ld" hidden><p style="line-height:1.8">지금의 너에게서 미래의 너에게. 이 편지는 안전하게 보관될 거야. 수능이 끝나면 관리자가 너에게 인스타그램 DM으로 이 편지를 보내줄게. 그날까지 조금만 더 힘내자!</p>
+<div id="ld" hidden><p id="ldt" style="line-height:1.8"></p>
 <p class="note">내 편지 접근 코드 (화면을 벗어나면 다시 볼 수 없어요. 캡처/메모해 두세요)</p><div class="code" id="lc"></div>
 <div class="btns"><button class="s" id="cc">코드 복사</button><button class="g" data-x>닫기</button></div></div></dialog>
 
@@ -114,7 +112,6 @@ load();
 
 // 다이얼로그
 document.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>b.closest('dialog').close());
-$('#dg').showModal(); // 앱을 열 때마다 환영 메시지 표시
 $('#bw').onclick=()=>{editId=null;$('#wt').textContent='나의 소원';$('#ws').textContent='📌 붙이기';
  $('#wc').value=$('#wh').value='';$('#we').textContent=$('#we2').textContent='';pkX=.2+Math.random()*.6;pkY=.2+Math.random()*.6;
  $('#w1').hidden=false;$('#w2').hidden=true;$('#dw').showModal()};
@@ -133,7 +130,9 @@ pk.onpointermove=e=>{if(drag)setP(e)};pk.onpointerup=pk.onpointercancel=()=>{dra
 $('#wnx').onclick=()=>{if(!$('#wc').value.trim()){$('#we').textContent='소원을 적어주세요';return}
  $('#we').textContent=$('#we2').textContent='';$('#w1').hidden=true;$('#w2').hidden=false;buildPk()};
 $('#wbk').onclick=()=>{$('#w2').hidden=true;$('#w1').hidden=false};
-$('#bl').onclick=()=>{$('#lf').hidden=false;$('#ld').hidden=true;$('#dl').showModal()};$('#bm').onclick=()=>$('#dm').showModal();
+const dmSel=()=>document.querySelector('[name=dm]:checked');
+document.querySelectorAll('[name=dm]').forEach(r=>r.onchange=()=>{$('#lia').hidden=dmSel().value!=='y'});
+$('#bl').onclick=()=>{document.querySelectorAll('[name=dm]').forEach(r=>r.checked=false);$('#lia').hidden=true;$('#le').textContent='';$('#lf').hidden=false;$('#ld').hidden=true;$('#dl').showModal()};$('#bm').onclick=()=>$('#dm').showModal();
 const msg=e=>e.message.includes('rate_limit')?'너무 자주 시도했어요. 잠시 후 다시 해주세요.':e.message.includes('not_owner')?'내가 쓴 소원만 수정/삭제할 수 있어요.':'저장에 실패했어요. 입력을 확인해 주세요.';
 $('#ws').onclick=async()=>{const c=$('#wc').value.trim();if(!c){$('#w2').hidden=true;$('#w1').hidden=false;$('#we').textContent='소원을 적어주세요';return}
  const nick=$('#wa').checked?'익명':$('#wn').value,cheer=$('#wh').value,x=Math.round(pkX*1000)/10,y=Math.round(pkY*1000)/10;
@@ -143,11 +142,15 @@ $('#ws').onclick=async()=>{const c=$('#wc').value.trim();if(!c){$('#w2').hidden=
  $('#ws').disabled=false;if(error){$('#we2').textContent=msg(error);return}
  const w=Array.isArray(data)?data[0]:data;if(w&&w.id){WS.set(w.id,w);if(!editId)mine.add(w.id);render()}
  editId=null;$('#wc').value=$('#wh').value='';$('#we').textContent=$('#we2').textContent='';$('#dw').close()};
-$('#ls').onclick=async()=>{const[n,t,b]=['#ln','#lt','#lb'].map(s=>$(s).value.trim());const i=$('#li').value.trim().replace(/^@/,'');
+$('#ls').onclick=async()=>{const[n,t,b]=['#ln','#lt','#lb'].map(s=>$(s).value.trim());const sel=dmSel();
  if(!n||!t||!b){$('#le').textContent='닉네임, 제목, 내용을 모두 적어주세요';return}
+ if(!sel){$('#le').textContent='수능 후 DM으로 받을지 선택해 주세요';return}
+ const wantDM=sel.value==='y',i=wantDM?$('#li').value.trim().replace(/^@/,''):'';
+ if(wantDM&&!i){$('#le').textContent='DM 받을 인스타그램 아이디를 적어주세요';return}
  if(i&&!/^[A-Za-z0-9._]{1,30}$/.test(i)){$('#le').textContent='인스타그램 아이디 형식이 올바르지 않아요';return}
  $('#ls').disabled=true;const{data,error}=await sb.rpc('submit_letter',{p_nick:n,p_title:t,p_body:b,p_insta:i,p_client:cid});$('#ls').disabled=false;
  if(error){$('#le').textContent=msg(error);return}
+ $('#ldt').textContent=wantDM?'지금의 너에게서 미래의 너에게. 이 편지는 안전하게 보관될 거야. 수능이 끝나면 최종현이 너에게 인스타그램 DM으로 이 편지를 보내줄게. 그날까지 조금만 더 힘내자!':'지금의 너에게서 미래의 너에게. 이 편지는 안전하게 보관될 거야. DM으로는 보내지 않으니, 아래 접근 코드로 언제든 다시 열어봐. 조금만 더 힘내자!';
  $('#lc').textContent=data;$('#lf').hidden=true;$('#ld').hidden=false;['#ln','#lt','#lb','#li'].forEach(s=>$(s).value='')};
 $('#cc').onclick=()=>navigator.clipboard?.writeText($('#lc').textContent);
 $('#mb').onclick=async()=>{$('#me').textContent='';$('#mo').innerHTML='';const{data,error}=await sb.rpc('get_my_letter',{p_code:$('#mc').value});
