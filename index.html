@@ -11,14 +11,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@700&display=swap" rel="stylesheet">
 </head><body><canvas id="snow"></canvas>
 <main>
-<h1>❄️ 우리의 겨울,<br>우리의 소원</h1>
-<p class="sub" id="now"></p>
-<section class="card hero"><p>수능까지</p><div class="dd" id="dd">-</div><p class="msg" id="msg"></p></section>
+<section class="card hero"><p>수능까지</p><div class="dd" id="dd">-</div></section>
 <p class="note tip">매달린 편지를 눌러 소원을 읽어보세요 ✉️ (금색 테두리는 내가 쓴 소원)</p>
+<div class="lkrow"><button class="lk" id="share">🔗 링크 복사</button></div>
 <div id="tree"></div>
-<section class="card stats"><div><b id="sw">0</b>소원</div><div><b id="sh">0</b>공감</div></section>
-<div class="btns"><button class="g" id="bm">내 편지 다시 보기 (접근 코드)</button><button class="s" id="share">🔗 링크 복사 · 공유하기</button></div>
-<p class="note" style="text-align:center">인스타 스토리 → 스티커 → 링크 에 붙여넣어 주세요</p>
+<div class="btns"><button class="g" id="bm">내 편지 다시 보기 (접근 코드)</button></div>
 </main>
 <div id="bar"><button class="p" id="bw">✨ 나의 소원 적기</button><button class="s" id="bl">💌 미래의 나에게 편지</button></div>
 
@@ -62,8 +59,7 @@ const MSGS=["지금까지 잘 해왔어. 남은 건 믿는 일뿐이야.","오�
 const kst=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'long',day:'numeric',weekday:'long',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
 const kstShort=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false});
 const p2=n=>String(n).padStart(2,'0');
-$('#msg').textContent='“'+MSGS[Math.floor((Date.now()+9*36e5)/864e5)%MSGS.length]+'”';
-function tick(){const n=Date.now();$('#now').textContent=kst.format(n)+' (KST)';let d=EXAM-n;
+function tick(){const n=Date.now();let d=EXAM-n;
  if(d<=0){$('#dd').innerHTML='<small>수능을 치른 모든 수험생, 수고했어요 🎉</small>';return}
  const s=Math.floor(d/1e3);$('#dd').innerHTML='D-'+Math.floor(s/86400)+'<small> 일 </small>'+p2(Math.floor(s%86400/3600))+':'+p2(Math.floor(s%3600/60))+':'+p2(s%60)}
 tick();setInterval(tick,1000);
@@ -84,14 +80,14 @@ function render(){
   ws.slice(i,i+n).forEach((w,k)=>{const h=parseInt(w.id.slice(0,4),16)||0;
    its.push({w,x:cx-hw+step*(k+.5)+(r%2?1:-1)*step*.12,y:y+(h%12)-6,d:-(h%45)/10})});
   i+=n;y+=72;r++}
- const H=Math.max(y+10,Math.round(innerHeight*.8)),T=H+50;
- let g='';
+ const H=Math.max(y+10,Math.round(innerHeight*.8)),T=H+72;
+ let g=`<defs><clipPath id="cp"><rect x="0" y="0" width="${cw}" height="${H}"/></clipPath></defs><g clip-path="url(#cp)">`;
  for(let s=34,t=0;s<H;s+=110,t++){const b=s+210,bw=Math.min(cx-2,half(b)+8);
   g+=`<polygon points="${cx},${s} ${cx+bw},${b} ${cx-bw},${b}" fill="${['#2d6a4f','#25573f','#347a58'][t%3]}"/>`}
  let sd=7;const rn=()=>(sd=sd*16807%2147483647)/2147483647;
  for(let k=0;k<Math.floor(H/14);k++){const yy=44+rn()*(H-54),xx=cx+(rn()*2-1)*(half(yy)-10);
   g+=`<circle cx="${xx.toFixed(1)}" cy="${yy.toFixed(1)}" r="3.4" fill="${['#f6c978','#ff8fa3','#cfe3f7'][k%3]}" opacity=".85"/>`}
- g+=`<rect x="0" y="${T-14}" width="${cw}" height="14" fill="#f4f8ff"/><text x="${cx}" y="32" text-anchor="middle" font-size="32">⭐</text>`;
+ g+=`</g><rect x="${cx-20}" y="${H-6}" width="40" height="${T-14-H+6}" fill="#6b4a2f"/><rect x="${cx-20}" y="${H-6}" width="12" height="${T-14-H+6}" fill="#7d5936"/><rect x="0" y="${T-14}" width="${cw}" height="14" fill="#f4f8ff"/><text x="${cx}" y="32" text-anchor="middle" font-size="32">⭐</text>`;
  tree.style.height=T+'px';tree.replaceChildren();
  tree.insertAdjacentHTML('beforeend',`<svg viewBox="0 0 ${cw} ${T}" preserveAspectRatio="xMidYMin meet" aria-hidden="true">${g}</svg>`);
  if(!ws.length)tree.insertAdjacentHTML('beforeend','<div class="empty">아직 매달린 소원이 없어요<br>첫 번째 소원을 걸어볼까요?</div>');
@@ -110,7 +106,7 @@ function openW(id){const w=WS.get(id);if(!w)return;openId=id;
 $('#rb').onclick=async()=>{const w=WS.get(openId);if(!w||liked.has(w.id))return;
  const{error}=await sb.rpc('add_heart',{p_wish:w.id,p_client:cid});
  if(error){alert(error.message.includes('rate_limit')?'잠시 후 다시 눌러주세요':'공감에 실패했어요');return}
- liked.add(w.id);localStorage.liked=JSON.stringify([...liked]);w.hearts++;paint($('#rb'),w.hearts,true);stats()};
+ liked.add(w.id);localStorage.liked=JSON.stringify([...liked]);w.hearts++;paint($('#rb'),w.hearts,true)};
 $('#re').onclick=()=>{const w=WS.get(openId);if(!w)return;editId=w.id;
  $('#wt').textContent='소원 수정';$('#ws').textContent='수정하기';
  $('#wa').checked=w.nickname==='익명';$('#wn').value=w.nickname==='익명'?'':w.nickname;
@@ -119,18 +115,16 @@ $('#re').onclick=()=>{const w=WS.get(openId);if(!w)return;editId=w.id;
 $('#rd').onclick=async()=>{const id=openId;if(!id||!confirm('이 소원을 삭제할까요? 되돌릴 수 없어요.'))return;
  const{error}=await sb.rpc('delete_wish',{p_id:id,p_client:cid});
  if(error){alert(msg(error));return}
- WS.delete(id);mine.delete(id);$('#dr').close();render();stats()};
+ WS.delete(id);mine.delete(id);$('#dr').close();render()};
 
 async function load(){const{data,error}=await sb.from('wishes').select('*').order('created_at',{ascending:false}).limit(100);
  if(error){tree.style.height='auto';tree.innerHTML='<p class="note" style="padding:20px;color:#fff">불러오지 못했어요. config.js 설정을 확인해 주세요.</p>';return}
  data.forEach(w=>WS.set(w.id,w));
  const{data:ids}=await sb.rpc('my_wish_ids',{p_client:cid});(ids||[]).forEach(v=>mine.add(v));
- render();stats()}
-async function stats(){const{data}=await sb.rpc('get_stats');if(data&&data[0]){$('#sw').textContent=data[0].wish_count;$('#sh').textContent=data[0].heart_count}}
+ render()}
 sb.channel('wishes').on('postgres_changes',{event:'*',schema:'public',table:'wishes'},p=>{
  if(p.eventType==='DELETE'){WS.delete(p.old.id);if(openId===p.old.id&&$('#dr').open)$('#dr').close();render()}
- else{const isNew=!WS.has(p.new.id);WS.set(p.new.id,p.new);if(openId===p.new.id&&$('#dr').open)openW(p.new.id);if(isNew)render()}
- stats()}).subscribe();
+ else{const isNew=!WS.has(p.new.id);WS.set(p.new.id,p.new);if(openId===p.new.id&&$('#dr').open)openW(p.new.id);if(isNew)render()}}).subscribe();
 load();
 
 // 다이얼로그
@@ -159,5 +153,7 @@ $('#mb').onclick=async()=>{$('#me').textContent='';$('#mo').innerHTML='';const{d
  if(error||!data.length){$('#me').textContent='일치하는 편지가 없어요';return}const l=data[0],d=document.createElement('div');d.className='card';
  d.innerHTML='<h4></h4><p class="w"></p><footer><time></time><span class="tag"></span></footer>';d.querySelector('h4').textContent=l.title;d.querySelector('.w').textContent=l.body;
  d.querySelector('time').textContent=kstShort.format(new Date(l.created_at));d.querySelector('.tag').textContent=l.delivered?'전달 완료':'보관 중';$('#mo').append(d)};
-$('#share').onclick=async()=>{const u=CFG.site||location.href;try{if(navigator.share)await navigator.share({title:document.title,url:u});else{await navigator.clipboard.writeText(u);alert('링크를 복사했어요!')}}catch(e){}};
+$('#share').onclick=async()=>{const b=$('#share'),u=/YOUR-SITE/.test(CFG.site||'')||!CFG.site?location.origin+'/':CFG.site;
+ let ok=false;try{await navigator.clipboard.writeText(u);ok=true}catch(e){const t=document.createElement('textarea');t.value=u;t.style.cssText='position:fixed;opacity:0';document.body.append(t);t.select();try{ok=document.execCommand('copy')}catch(_){}t.remove()}
+ b.textContent=ok?'✅ 복사됨!':'복사 실패: '+u;setTimeout(()=>b.textContent='🔗 링크 복사',2000)};
 </script></body></html>
