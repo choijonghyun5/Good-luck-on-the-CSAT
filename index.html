@@ -14,13 +14,13 @@
 <h1>❄️ 우리의 겨울,<br>우리의 소원</h1>
 <p class="sub" id="now"></p>
 <section class="card hero"><p>수능까지</p><div class="dd" id="dd">-</div><p class="msg" id="msg"></p></section>
-<div class="btns"><button class="p" id="bw">✨ 나의 소원 적기</button><button class="s" id="bl">💌 미래의 나에게 편지 쓰기</button><button class="g" id="bm">내 편지 다시 보기 (접근 코드)</button></div>
-<section class="card stats"><div><b id="sw">0</b>소원</div><div><b id="sh">0</b>공감</div></section>
-<h2>소원 트리</h2><p class="note" style="margin:0 4px">매달린 편지를 눌러 소원을 읽어보세요 ✉️ (금색 테두리는 내가 쓴 소원)</p>
+<p class="note tip">매달린 편지를 눌러 소원을 읽어보세요 ✉️ (금색 테두리는 내가 쓴 소원)</p>
 <div id="tree"></div>
-<div class="btns"><button class="s" id="share">🔗 링크 복사 · 공유하기</button></div>
+<section class="card stats"><div><b id="sw">0</b>소원</div><div><b id="sh">0</b>공감</div></section>
+<div class="btns"><button class="g" id="bm">내 편지 다시 보기 (접근 코드)</button><button class="s" id="share">🔗 링크 복사 · 공유하기</button></div>
 <p class="note" style="text-align:center">인스타 스토리 → 스티커 → 링크 에 붙여넣어 주세요</p>
 </main>
+<div id="bar"><button class="p" id="bw">✨ 나의 소원 적기</button><button class="s" id="bl">💌 미래의 나에게 편지</button></div>
 
 <dialog id="dg" class="letter"><h3>💌 안녕!</h3>
 <p style="line-height:1.9;margin:8px 0">안녕, 나 최종현이야. 내 이름이 갑자기 나와서 좀 당황했지?</p>
@@ -78,20 +78,20 @@ const tree=$('#tree'),WS=new Map(),mine=new Set();let editId=null,openId=null,la
 function paint(b,n,on){b.textContent=(on?'♥ ':'♡ ')+n;b.classList.toggle('on',on)}
 function render(){
  const ws=[...WS.values()].sort((a,b)=>a.created_at<b.created_at?1:-1);
- const cw=tree.clientWidth||520,cx=cw/2,max=cx-8,half=y=>Math.min(max,20+y*.5);lastW=cw;
- const its=[];let y=70,i=0,r=0;
- while(i<ws.length){const hw=half(y)-14,n=Math.max(1,Math.floor(hw*2/48)),step=hw*2/n;
+ const cw=tree.clientWidth||520,cx=cw/2,max=cx-8,half=y=>Math.min(max,20+y*.62);lastW=cw;
+ const its=[];let y=84,i=0,r=0;
+ while(i<ws.length){const hw=half(y)-18,n=Math.max(1,Math.floor(hw*2/62)),step=hw*2/n;
   ws.slice(i,i+n).forEach((w,k)=>{const h=parseInt(w.id.slice(0,4),16)||0;
    its.push({w,x:cx-hw+step*(k+.5)+(r%2?1:-1)*step*.12,y:y+(h%12)-6,d:-(h%45)/10})});
-  i+=n;y+=60;r++}
- const H=Math.max(y+10,280),T=H+44;
+  i+=n;y+=72;r++}
+ const H=Math.max(y+10,Math.round(innerHeight*.8)),T=H+50;
  let g='';
- for(let s=26,t=0;s<H;s+=90,t++){const b=s+170,bw=Math.min(cx-2,half(b)+8);
+ for(let s=34,t=0;s<H;s+=110,t++){const b=s+210,bw=Math.min(cx-2,half(b)+8);
   g+=`<polygon points="${cx},${s} ${cx+bw},${b} ${cx-bw},${b}" fill="${['#2d6a4f','#25573f','#347a58'][t%3]}"/>`}
  let sd=7;const rn=()=>(sd=sd*16807%2147483647)/2147483647;
  for(let k=0;k<Math.floor(H/14);k++){const yy=44+rn()*(H-54),xx=cx+(rn()*2-1)*(half(yy)-10);
-  g+=`<circle cx="${xx.toFixed(1)}" cy="${yy.toFixed(1)}" r="2.6" fill="${['#f6c978','#ff8fa3','#cfe3f7'][k%3]}" opacity=".85"/>`}
- g+=`<rect x="0" y="${T-14}" width="${cw}" height="14" fill="#f4f8ff"/><text x="${cx}" y="26" text-anchor="middle" font-size="24">⭐</text>`;
+  g+=`<circle cx="${xx.toFixed(1)}" cy="${yy.toFixed(1)}" r="3.4" fill="${['#f6c978','#ff8fa3','#cfe3f7'][k%3]}" opacity=".85"/>`}
+ g+=`<rect x="0" y="${T-14}" width="${cw}" height="14" fill="#f4f8ff"/><text x="${cx}" y="32" text-anchor="middle" font-size="32">⭐</text>`;
  tree.style.height=T+'px';tree.replaceChildren();
  tree.insertAdjacentHTML('beforeend',`<svg viewBox="0 0 ${cw} ${T}" preserveAspectRatio="xMidYMin meet" aria-hidden="true">${g}</svg>`);
  if(!ws.length)tree.insertAdjacentHTML('beforeend','<div class="empty">아직 매달린 소원이 없어요<br>첫 번째 소원을 걸어볼까요?</div>');
