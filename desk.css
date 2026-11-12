@@ -54,3 +54,11 @@ button.pn:focus-visible{outline:2px solid #fff;outline-offset:3px}
 #dr .btns>.h{justify-self:center;padding:10px 22px}
 #dr #rm{display:contents}
 #dr #rm[hidden]{display:none}
+
+/* 입장 응원 문구: 화면 중앙, D-day 시간과 같은 노란 분필 글씨 */
+#cheer{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:70;width:max-content;max-width:88vw;padding:0 8px;
+ font-family:"Nanum Pen Script","Nanum Myeongjo",cursive;font-size:clamp(34px,9vw,52px);line-height:1.25;text-align:center;word-break:keep-all;
+ color:#ffe27a;text-shadow:0 0 6px rgba(255,226,122,.35),0 2px 14px rgba(0,0,0,.6);
+ pointer-events:none;animation:cin .8s both;transition:opacity .6s}
+#cheer.out{opacity:0}
+@keyframes cin{from{opacity:0;transform:translate(-50%,-44%)}}
