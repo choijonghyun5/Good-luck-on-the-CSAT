@@ -61,4 +61,6 @@ button.pn:focus-visible{outline:2px solid #fff;outline-offset:3px}
  color:#ffe27a;text-shadow:0 0 6px rgba(255,226,122,.35),0 2px 14px rgba(0,0,0,.6);
  pointer-events:none;animation:cin .8s both;transition:opacity .6s}
 #cheer.out{opacity:0}
+#cheer::before{content:"";position:absolute;z-index:-1;left:50%;top:50%;width:150%;height:260%;transform:translate(-50%,-50%);pointer-events:none;
+ background:radial-gradient(ellipse at center,rgba(8,16,13,.82) 0,rgba(8,16,13,.65) 40%,transparent 72%)}
 @keyframes cin{from{opacity:0;transform:translate(-50%,-44%)}}
