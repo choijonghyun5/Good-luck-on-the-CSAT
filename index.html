@@ -1,0 +1,104 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>우리의 겨울, 우리의 소원</title>
+<meta name="description" content="수능을 앞둔 우리, 서로의 소원에 하트를 눌러주고 미래의 나에게 편지를 남겨요.">
+<meta property="og:type" content="website"><meta property="og:title" content="우리의 겨울, 우리의 소원">
+<meta property="og:description" content="소원을 남기고 서로 응원해요 ❄️ 미래의 나에게 비밀 편지도 남길 수 있어요.">
+<meta property="og:image" content="https://YOUR-SITE.vercel.app/og.png"><meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#1d2b4f">
+<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@700&display=swap" rel="stylesheet">
+</head><body><canvas id="snow"></canvas>
+<main>
+<h1>❄️ 우리의 겨울,<br>우리의 소원</h1>
+<p class="sub" id="now"></p>
+<section class="card hero"><p>수능까지</p><div class="dd" id="dd">-</div><p class="msg" id="msg"></p></section>
+<div class="btns"><button class="p" id="bw">✨ 나의 소원 적기</button><button class="s" id="bl">💌 미래의 나에게 편지 쓰기</button><button class="g" id="bm">내 편지 다시 보기 (접근 코드)</button></div>
+<section class="card stats"><div><b id="sw">0</b>소원</div><div><b id="sh">0</b>공감</div></section>
+<h2>소원 게시판</h2><div id="list"></div>
+<div class="btns"><button class="s" id="share">🔗 링크 복사 · 공유하기</button></div>
+<p class="note" style="text-align:center">인스타 스토리 → 스티커 → 링크 에 붙여넣어 주세요</p>
+</main>
+
+<dialog id="dw"><h3>나의 소원</h3>
+<input id="wn" maxlength="20" placeholder="닉네임"><label class="row"><input type="checkbox" id="wa"> 익명으로 쓸래요</label>
+<textarea id="wc" rows="4" maxlength="300" placeholder="소원을 적어주세요 (300자)"></textarea>
+<textarea id="wh" rows="2" maxlength="200" placeholder="(선택) 다른 수험생에게 응원 한마디"></textarea>
+<p class="err" id="we"></p><div class="btns"><button class="p" id="ws">소원 올리기</button><button class="g" data-x>닫기</button></div></dialog>
+
+<dialog id="dl" class="letter"><div id="lf"><h3>미래의 나에게</h3>
+<input id="ln" maxlength="20" placeholder="닉네임"><input id="lt" maxlength="60" placeholder="제목">
+<textarea id="lb" rows="7" maxlength="3000" placeholder="수능이 끝난 나에게…"></textarea>
+<input id="li" maxlength="31" placeholder="(선택) 인스타그램 아이디 — DM으로 받고 싶다면" autocapitalize="none">
+<p class="note">🔒 편지는 게시판에 공개되지 않아요. 나와 관리자만 볼 수 있어요.</p>
+<p class="err" id="le"></p><div class="btns"><button class="p" id="ls">편지 보관하기</button><button class="g" data-x>닫기</button></div></div>
+<div id="ld" hidden><p style="line-height:1.8">지금의 너에게서 미래의 너에게. 이 편지는 안전하게 보관될 거야. 수능이 끝나면 관리자가 너에게 인스타그램 DM으로 이 편지를 보내줄게. 그날까지 조금만 더 힘내자!</p>
+<p class="note">내 편지 접근 코드 (화면을 벗어나면 다시 볼 수 없어요. 캡처/메모해 두세요)</p><div class="code" id="lc"></div>
+<div class="btns"><button class="s" id="cc">코드 복사</button><button class="g" data-x>닫기</button></div></div></dialog>
+
+<dialog id="dm"><h3>내 편지 보기</h3><input id="mc" placeholder="XXXX-XXXX-XXXX-XXXX" autocapitalize="characters">
+<div id="mo"></div><p class="err" id="me"></p><div class="btns"><button class="p" id="mb">열어보기</button><button class="g" data-x>닫기</button></div></dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script>
+const $=s=>document.querySelector(s),sb=supabase.createClient(CFG.url,CFG.key),EXAM=Date.parse(CFG.exam);
+const cid=(()=>{let v=localStorage.cid;if(!v){v=crypto.randomUUID().replace(/-/g,'')+Math.random().toString(36).slice(2,8);localStorage.cid=v}return v})();
+const liked=new Set(JSON.parse(localStorage.liked||'[]'));
+const MSGS=["지금까지 잘 해왔어. 남은 건 믿는 일뿐이야.","오늘의 한 걸음이 내일의 든든한 발판이 돼.","너의 노력은 절대 너를 배신하지 않아.","잠깐 쉬어도 괜찮아. 따뜻한 차 한 잔 마셔.","불안한 건 최선을 다하고 있다는 증거야.","추운 겨울 끝엔 반드시 봄이 와.","넌 생각보다 훨씬 단단하고 멋진 사람이야.","하루하루가 쌓여 너만의 별이 되고 있어.","완벽하지 않아도 충분해. 오늘도 수고했어.","네 곁에서 응원하는 사람들이 많아.","긴 터널의 끝이 보이기 시작했어.","숨 한 번 크게 쉬고, 한 문제씩 천천히.","너의 겨울이 가장 따뜻한 기억이 될 거야.","웃는 얼굴로 시험장 문을 열자. 넌 할 수 있어!"];
+const kst=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'long',day:'numeric',weekday:'long',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+const kstShort=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false});
+const p2=n=>String(n).padStart(2,'0');
+$('#msg').textContent='“'+MSGS[Math.floor((Date.now()+9*36e5)/864e5)%MSGS.length]+'”';
+function tick(){const n=Date.now();$('#now').textContent=kst.format(n)+' (KST)';let d=EXAM-n;
+ if(d<=0){$('#dd').innerHTML='<small>수능을 치른 모든 수험생, 수고했어요 🎉</small>';return}
+ const s=Math.floor(d/1e3);$('#dd').innerHTML='D-'+Math.floor(s/86400)+'<small> 일 </small>'+p2(Math.floor(s%86400/3600))+':'+p2(Math.floor(s%3600/60))+':'+p2(s%60)}
+tick();setInterval(tick,1000);
+// 눈
+(()=>{const c=$('#snow'),x=c.getContext('2d');let W,H,f=[];const R=()=>{W=c.width=innerWidth;H=c.height=innerHeight};R();addEventListener('resize',R);
+for(let i=0;i<70;i++)f.push({x:Math.random()*W,y:Math.random()*H,r:1+Math.random()*3,v:.4+Math.random()*1,p:Math.random()*6});
+if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+(function L(){x.clearRect(0,0,W,H);x.fillStyle='rgba(255,255,255,.85)';for(const s of f){s.y+=s.v;s.p+=.02;s.x+=Math.sin(s.p)*.5;if(s.y>H){s.y=-5;s.x=Math.random()*W}x.beginPath();x.arc(s.x,s.y,s.r,0,7);x.fill()}requestAnimationFrame(L)})()})();
+// 게시판
+const list=$('#list');
+function card(w){const e=document.createElement('article');e.className='card';e.dataset.id=w.id;
+ e.innerHTML='<h4></h4><p class="w"></p><p class="c"></p><footer><time></time><button class="h"></button></footer>';
+ e.querySelector('h4').textContent=w.nickname;e.querySelector('.w').textContent=w.content;
+ const c=e.querySelector('.c');w.cheer?c.textContent='💬 '+w.cheer:c.remove();
+ e.querySelector('time').textContent=kstShort.format(new Date(w.created_at));
+ const b=e.querySelector('.h');paint(b,w.hearts,liked.has(w.id));
+ b.onclick=async()=>{if(liked.has(w.id))return;const{error}=await sb.rpc('add_heart',{p_wish:w.id,p_client:cid});
+  if(error){alert(error.message.includes('rate_limit')?'잠시 후 다시 눌러주세요':'공감에 실패했어요');return}
+  liked.add(w.id);localStorage.liked=JSON.stringify([...liked]);paint(b,w.hearts+1,true);stats()};return e}
+function paint(b,n,on){b.textContent=(on?'♥ ':'♡ ')+n;b.classList.toggle('on',on)}
+function add(w,top){if(list.querySelector(`[data-id="${w.id}"]`))return;const e=card(w);top?list.prepend(e):list.append(e)}
+async function load(){const{data,error}=await sb.from('wishes').select('*').order('created_at',{ascending:false}).limit(100);
+ if(error){list.innerHTML='<p class="note">불러오지 못했어요. config.js 설정을 확인해 주세요.</p>';return}
+ list.innerHTML='';data.forEach(w=>add(w));stats()}
+async function stats(){const{data}=await sb.rpc('get_stats');if(data&&data[0]){$('#sw').textContent=data[0].wish_count;$('#sh').textContent=data[0].heart_count}}
+sb.channel('wishes').on('postgres_changes',{event:'*',schema:'public',table:'wishes'},p=>{
+ if(p.eventType==='INSERT')add(p.new,true);
+ else if(p.eventType==='UPDATE'){const e=list.querySelector(`[data-id="${p.new.id}"]`);if(e)paint(e.querySelector('.h'),p.new.hearts,liked.has(p.new.id))}
+ stats()}).subscribe();
+load();
+// 다이얼로그
+document.querySelectorAll('[data-x]').forEach(b=>b.onclick=()=>b.closest('dialog').close());
+$('#bw').onclick=()=>$('#dw').showModal();$('#bl').onclick=()=>{$('#lf').hidden=false;$('#ld').hidden=true;$('#dl').showModal()};$('#bm').onclick=()=>$('#dm').showModal();
+const msg=e=>e.message.includes('rate_limit')?'너무 자주 올렸어요. 잠시 후 다시 시도해 주세요.':'저장에 실패했어요. 입력을 확인해 주세요.';
+$('#ws').onclick=async()=>{const c=$('#wc').value.trim();if(!c){$('#we').textContent='소원을 적어주세요';return}
+ $('#ws').disabled=true;const{error}=await sb.rpc('add_wish',{p_nick:$('#wa').checked?'익명':$('#wn').value,p_content:c,p_cheer:$('#wh').value,p_client:cid});
+ $('#ws').disabled=false;if(error){$('#we').textContent=msg(error);return}
+ $('#wc').value=$('#wh').value='';$('#we').textContent='';$('#dw').close()};
+$('#ls').onclick=async()=>{const[n,t,b]=['#ln','#lt','#lb'].map(s=>$(s).value.trim());const i=$('#li').value.trim().replace(/^@/,'');
+ if(!n||!t||!b){$('#le').textContent='닉네임, 제목, 내용을 모두 적어주세요';return}
+ if(i&&!/^[A-Za-z0-9._]{1,30}$/.test(i)){$('#le').textContent='인스타그램 아이디 형식이 올바르지 않아요';return}
+ $('#ls').disabled=true;const{data,error}=await sb.rpc('submit_letter',{p_nick:n,p_title:t,p_body:b,p_insta:i,p_client:cid});$('#ls').disabled=false;
+ if(error){$('#le').textContent=msg(error);return}
+ $('#lc').textContent=data;$('#lf').hidden=true;$('#ld').hidden=false;['#ln','#lt','#lb','#li'].forEach(s=>$(s).value='')};
+$('#cc').onclick=()=>navigator.clipboard?.writeText($('#lc').textContent);
+$('#mb').onclick=async()=>{$('#me').textContent='';$('#mo').innerHTML='';const{data,error}=await sb.rpc('get_my_letter',{p_code:$('#mc').value});
+ if(error||!data.length){$('#me').textContent='일치하는 편지가 없어요';return}const l=data[0],d=document.createElement('div');d.className='card';
+ d.innerHTML='<h4></h4><p class="w"></p><footer><time></time><span class="tag"></span></footer>';d.querySelector('h4').textContent=l.title;d.querySelector('.w').textContent=l.body;
+ d.querySelector('time').textContent=kstShort.format(new Date(l.created_at));d.querySelector('.tag').textContent=l.delivered?'전달 완료':'보관 중';$('#mo').append(d)};
+$('#share').onclick=async()=>{const u=CFG.site||location.href;try{if(navigator.share)await navigator.share({title:document.title,url:u});else{await navigator.clipboard.writeText(u);alert('링크를 복사했어요!')}}catch(e){}};
+</script></body></html>
