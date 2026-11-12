@@ -4,8 +4,7 @@
 <section class="card" id="lg"><input id="em" type="email" placeholder="관리자 이메일" autocomplete="username"><input id="pw" type="password" placeholder="비밀번호" autocomplete="current-password">
 <p class="err" id="er"></p><div class="btns"><button class="p" id="go">로그인</button></div></section>
 <section id="ad" hidden><div class="card" id="notice"></div>
-<input id="q" placeholder="닉네임·제목·인스타·내용 검색"><div class="row"><label><input type="radio" name="f" value="all" checked> 전체</label><label><input type="radio" name="f" value="no"> 미전달</label><label><input type="radio" name="f" value="yes"> 전달 완료</label>
-<button class="g" id="out" style="margin-left:auto">로그아웃</button></div><p class="note" id="cnt"></p><div id="ls"></div></section></main>
+<input id="q" placeholder="닉네임·제목·내용 검색"><div class="row"><button class="g" id="out" style="margin-left:auto">로그아웃</button></div><p class="note" id="cnt"></p><div id="ls"></div></section></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script><script src="config.js"></script>
 <script>
 const $=s=>document.querySelector(s),sb=supabase.createClient(CFG.url,CFG.key);let all=[];
@@ -13,21 +12,17 @@ const f=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',dateStyle:'medium
 async function init(){const{data:{session}}=await sb.auth.getSession();if(!session)return;
  const{data:ok}=await sb.rpc('is_admin');if(!ok){$('#er').textContent='관리자 권한이 없는 계정입니다.';await sb.auth.signOut();return}
  $('#lg').hidden=true;$('#ad').hidden=false;
- $('#notice').innerHTML=Date.now()<Date.parse(CFG.examEnd)?'📌 수능 종료 전입니다. 편지는 수능이 끝난 뒤(11/19 18시 이후) 인스타그램 DM으로 직접 전달해 주세요.'
- :'📬 <b>수능이 끝났어요!</b> 아래 목록에서 인스타그램 아이디를 눌러 DM으로 편지를 보내고, 보낸 뒤 “전달 완료”를 눌러 주세요. DM 전달을 원하지 않은 편지(인스타 없음)는 보내지 않아도 됩니다.';
+ $('#notice').textContent='📌 편지는 작성자가 접근 코드로만 다시 볼 수 있어요. 이 화면은 확인용이며 DM 전달은 하지 않습니다.';
  load()}
 async function load(){const{data,error}=await sb.from('letters').select('*').order('created_at',{ascending:false});if(error){$('#er').textContent=error.message;return}all=data;draw()}
-function draw(){const q=$('#q').value.toLowerCase(),fl=document.querySelector('[name=f]:checked').value;
- const r=all.filter(l=>(fl==='all'||(fl==='yes')===l.delivered)&&[l.nickname,l.title,l.instagram||'',l.body].join(' ').toLowerCase().includes(q));
- $('#cnt').textContent=`${r.length}건 / 전체 ${all.length}건 (미전달 ${all.filter(l=>!l.delivered).length})`;const box=$('#ls');box.innerHTML='';
+function draw(){const q=$('#q').value.toLowerCase();
+ const r=all.filter(l=>[l.nickname,l.title,l.body].join(' ').toLowerCase().includes(q));
+ $('#cnt').textContent=`${r.length}건 / 전체 ${all.length}건`;const box=$('#ls');box.innerHTML='';
  r.forEach(l=>{const e=document.createElement('article');e.className='card';
-  e.innerHTML='<h4></h4><p class="note"></p><p class="w"></p><footer><span class="tag"></span><button class="s"></button></footer>';
+  e.innerHTML='<h4></h4><p class="note"></p><p class="w"></p>';
   e.querySelector('h4').textContent=l.title;e.querySelector('.note').textContent=l.nickname+' · '+f.format(new Date(l.created_at));
-  const n=e.querySelector('.note');if(l.instagram){const a=document.createElement('a');a.href='https://instagram.com/'+l.instagram;a.target='_blank';a.rel='noopener';a.textContent=' · @'+l.instagram;n.append(a)}else n.append(' · (DM 전달 안 함)');
-  e.querySelector('.w').textContent=l.body;const t=e.querySelector('.tag');t.textContent=l.delivered?'전달 완료':'미전달';t.classList.toggle('ok',l.delivered);
-  const b=e.querySelector('button');b.textContent=l.delivered?'미전달로 되돌리기':'전달 완료 표시';
-  b.onclick=async()=>{const{error}=await sb.from('letters').update({delivered:!l.delivered,delivered_at:l.delivered?null:new Date().toISOString()}).eq('id',l.id);if(error)alert(error.message);else load()};box.append(e)})}
+  e.querySelector('.w').textContent=l.body;box.append(e)})}
 $('#go').onclick=async()=>{const{error}=await sb.auth.signInWithPassword({email:$('#em').value,password:$('#pw').value});if(error){$('#er').textContent='로그인 실패';return}init()};
 $('#out').onclick=async()=>{await sb.auth.signOut();location.reload()};
-$('#q').oninput=draw;document.querySelectorAll('[name=f]').forEach(r=>r.onchange=draw);init();
+$('#q').oninput=draw;init();
 </script></body></html>
